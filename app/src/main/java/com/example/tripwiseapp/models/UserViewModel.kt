@@ -1,16 +1,21 @@
 package com.example.tripwiseapp.models
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.tripwiseapp.dao.UserDAO
+import com.example.tripwiseapp.entity.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 data class RegisterUser(
     val user: String = "",
     val email: String = "",
     val password: String = "",
     val confirmPassword: String = "",
-    val errorMessage: String = ""
+    val errorMessage: String = "",
+    val isSaved: Boolean = false
 ){
     fun validatePassord(): String {
         if (password.isBlank()) {
@@ -41,9 +46,19 @@ data class RegisterUser(
         }
     }
 
+    fun toUser(): User {
+        return User(
+            name = user,
+            email = email,
+            password = password
+        )
+    }
+
 }
 
-class UserViewModel : ViewModel() {
+class UserViewModel(
+    private val _userDAO: UserDAO
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterUser())
     val uiState : StateFlow<RegisterUser> = _uiState.asStateFlow()
@@ -64,21 +79,27 @@ class UserViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(confirmPassword = confirm)
     }
 
-    fun register(): Boolean  {
+    fun register() {
         try {
             _uiState.value.validateAllField()
-            return true
-            // register in database or invoke api
+
+            viewModelScope.launch {
+                _userDAO.insert(
+                    _uiState.value.toUser()
+                )
+                _uiState.value = _uiState.value.copy(isSaved = true)
+            }
         }
         catch (e: Exception) {
             _uiState.value = _uiState.value.copy(errorMessage = e.message ?: "Unknow error")
-            return false
         }
     }
 
-    fun cleanErrorMessage() {
-        _uiState.value = _uiState.value.copy(errorMessage = "")
+    fun cleanDisplayValues() {
+        _uiState.value = _uiState.value.copy(
+            errorMessage = "",
+            isSaved = false
+        )
     }
-
 
 }

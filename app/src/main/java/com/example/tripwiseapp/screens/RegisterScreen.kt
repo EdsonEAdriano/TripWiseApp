@@ -13,6 +13,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -84,12 +85,7 @@ fun RegisterScreen(userViewModel: UserViewModel, onNavigateTo:(String) -> Unit) 
             Button(
                 modifier = Modifier.padding(top = 16.dp),
                 onClick = {
-                    if (userViewModel.register()) {
-                        Toast.makeText(ctx, "User registered",
-                            Toast.LENGTH_SHORT).show()
-
-                        onNavigateTo("MainScreen")
-                    }
+                    userViewModel.register()
                 }
             ) {
                 Text(text = "Register user")
@@ -112,15 +108,23 @@ fun RegisterScreen(userViewModel: UserViewModel, onNavigateTo:(String) -> Unit) 
                 ErrorDialog(
                     error = registerUser.value.errorMessage,
                     onDismissRequest =  {
-                        userViewModel.cleanErrorMessage()
+                        userViewModel.cleanDisplayValues()
                     }
                 )
             }
         }
+
+        LaunchedEffect(registerUser.value.isSaved) {
+            if(registerUser.value.isSaved){
+                Toast.makeText(ctx, "User registered",
+                    Toast.LENGTH_SHORT).show()
+
+                onNavigateTo("MainScreen")
+            }
+        }
     }
-
-
 }
+
 
 @Composable
 @Preview(showSystemUi = true, showBackground = true)

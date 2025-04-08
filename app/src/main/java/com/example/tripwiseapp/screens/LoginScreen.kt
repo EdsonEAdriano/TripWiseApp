@@ -9,6 +9,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,12 +65,7 @@ fun LoginScreen(loginViewModel: LoginViewModel, onNavigateTo:(String) -> Unit) {
             Button(
                 modifier = Modifier.padding(top = 16.dp),
                 onClick = {
-                    if (loginViewModel.login()) {
-                        Toast.makeText(ctx, "User logged in",
-                            Toast.LENGTH_SHORT).show()
-
-                        onNavigateTo("MainScreen")
-                    }
+                    loginViewModel.login()
                 }
             ) {
                 Text(text = "Login")
@@ -84,6 +80,15 @@ fun LoginScreen(loginViewModel: LoginViewModel, onNavigateTo:(String) -> Unit) {
                         loginViewModel.cleanErrorMessage()
                     }
                 )
+            }
+        }
+
+        LaunchedEffect(loginUser.value.isValid) {
+            if(loginUser.value.isValid){
+                Toast.makeText(ctx, "User logged",
+                    Toast.LENGTH_SHORT).show()
+
+                onNavigateTo("MainScreen")
             }
         }
     }

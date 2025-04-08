@@ -22,7 +22,7 @@ import com.example.tripwiseapp.models.UserViewModel
 import com.example.tripwiseapp.ui.theme.TripWiseAppTheme
 
 @Composable
-fun MainScreen(){
+fun AboutScreen(){
     Scaffold {
         Column(
             modifier = Modifier
@@ -30,21 +30,21 @@ fun MainScreen(){
                 .padding(16.dp)
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
+
         ) {
             Text(
-                text = "List of Trips",
+                text = "About",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
-            ListTripsScreen()
         }
     }
 }
 
 @Composable
 @Preview(showSystemUi = true, showBackground = true)
-fun PreviewMainScreen() {
+fun PreviewAboutScreen() {
     TripWiseAppTheme {
-        MainScreen()
+        AboutScreen()
     }
 }
