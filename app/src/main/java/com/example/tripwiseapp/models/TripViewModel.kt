@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class RegisterTrip(
+    val id: Int = 0,
     val destiny: String = "",
     val type: String = "",
     val start: String = "",
@@ -73,6 +74,7 @@ data class RegisterTrip(
 
     fun toTrip(): Trip {
         return Trip(
+            id         =  id,
             destiny    =  destiny,
             type       =  type,
             startDate  =  start,
@@ -84,11 +86,32 @@ data class RegisterTrip(
 
 
 class TripViewModel(
+    private val id: Int?,
     private val _tripDAO: TripDAO
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RegisterTrip())
     val uiState : StateFlow<RegisterTrip> = _uiState.asStateFlow()
+
+
+    init {
+        id?.let { id ->
+            viewModelScope.launch {
+                _tripDAO.findById(id)?.let { trip ->
+                    _uiState.value = _uiState.value.copy(
+                        id = trip.id,
+                        destiny = trip.destiny,
+                        type = trip.type,
+                        start = trip.startDate,
+                        end = trip.endDate,
+                        budget = trip.budget
+                    )
+                }
+            }
+        }
+    }
+
+
 
     fun onDestinyChange(destiny: String) {
         _uiState.value = _uiState.value.copy(destiny = destiny)
@@ -116,7 +139,7 @@ class TripViewModel(
             _uiState.value.validateAllField()
 
             viewModelScope.launch {
-                _tripDAO.insertTrip(
+                _tripDAO.upsert(
                     _uiState.value.toTrip()
                 )
                 _uiState.value = _uiState.value.copy(isSaved = true)

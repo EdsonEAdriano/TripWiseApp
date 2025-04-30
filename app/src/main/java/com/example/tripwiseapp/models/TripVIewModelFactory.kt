@@ -6,9 +6,10 @@ import com.example.tripwiseapp.dao.TripDAO
 import com.example.tripwiseapp.dao.UserDAO
 
 class TripViewModelFactory(
+    private val id: Int?,
     private val tripDao: TripDAO
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return TripViewModel(tripDao) as T
+        return TripViewModel(id, tripDao) as T
     }
 }

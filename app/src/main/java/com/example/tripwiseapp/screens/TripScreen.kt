@@ -31,13 +31,14 @@ import com.example.tripwiseapp.ui.theme.TripWiseAppTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TripScreen(
+    id: Int?,
     onNavigateTo:(String) -> Unit
 ){
     val ctx = LocalContext.current
 
     val tripDao = AppDatabase.getDatabase(ctx).tripDao()
     val tripViewModel : TripViewModel = viewModel(
-        factory = TripViewModelFactory(tripDao)
+        factory = TripViewModelFactory(id, tripDao)
     )
 
     val registerTrip = tripViewModel.uiState.collectAsState()
@@ -137,6 +138,6 @@ fun TripScreen(
 @Preview(showSystemUi = true, showBackground = true)
 fun PreviewTripScreen() {
     TripWiseAppTheme {
-        TripScreen({})
+        TripScreen(null, {})
     }
 }

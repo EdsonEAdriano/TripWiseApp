@@ -1,14 +1,18 @@
 package com.example.tripwiseapp.screens
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import com.example.tripwiseapp.database.AppDatabase
 import com.example.tripwiseapp.entity.Trip
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
@@ -18,27 +22,43 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
-fun ListTripsScreen() {
+fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit) {
     val context = LocalContext.current
     val tripDao = AppDatabase.getDatabase(context).tripDao()
 
     var trips by remember { mutableStateOf(emptyList<Trip>()) }
     var tripToDelete by remember { mutableStateOf<Trip?>(null) }
 
-    // Carrega as trips na inicialização
+    var selectedTripId by remember { mutableStateOf<Int?>(null) }
+
+
     LaunchedEffect(Unit) {
         trips = tripDao.getAllTrips().sortedByDescending { it.id }
     }
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxSize()
+    ) {
         trips.forEach { trip ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
+
                 elevation = CardDefaults.cardElevation(8.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(
+                        modifier = Modifier.padding(16.dp)
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onLongPress = {
+                                    onInsertOrEdit(trip.id)
+                                }
+                            )
+                        }
+                ) {
                     Text("Destiny: ${trip.destiny}", style = MaterialTheme.typography.bodyLarge)
                     Text("Type: ${trip.type}", style = MaterialTheme.typography.bodyMedium)
                     Text("Start: ${formatDate(trip.startDate)}", style = MaterialTheme.typography.bodyMedium)
@@ -80,7 +100,7 @@ fun ListTripsScreen() {
                         CoroutineScope(Dispatchers.IO).launch {
                             tripToDelete?.let { trip ->
                                 tripDao.deleteTrip(trip)
-                                trips = tripDao.getAllTrips().sortedByDescending { it.id }
+                                trips = tripDao.getAllTrips().sortedBy { Date(it.startDate) }
                                 tripToDelete = null
                             }
                         }
@@ -99,6 +119,8 @@ fun ListTripsScreen() {
         )
     }
 }
+
+
 
 fun formatDate(dateString: String): String {
     return try {

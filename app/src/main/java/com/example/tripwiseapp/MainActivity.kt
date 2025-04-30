@@ -43,6 +43,8 @@ import androidx.compose.material3.contentColorFor
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.example.tripwiseapp.database.AppDatabase
 import com.example.tripwiseapp.models.LoginViewModelFactory
 import com.example.tripwiseapp.models.TripViewModel
@@ -184,7 +186,11 @@ fun MyApp() {
                 }
 
                 composable(route = "MainScreen") {
-                    MainScreen()
+                    MainScreen(
+                        onNavigateTo = {
+                            navController.navigate(it)
+                        }
+                    )
                 }
 
                 composable(route = "AboutScreen") {
@@ -193,6 +199,7 @@ fun MyApp() {
 
                 composable(route = "TripScreen") {
                     TripScreen(
+                        null,
                         onNavigateTo = {
                             navController.navigate(it) {
                                 popUpTo(0)
@@ -200,6 +207,24 @@ fun MyApp() {
                         }
                     )
                 }
+
+                composable(route = "TripScreen/{id}",
+                    arguments = listOf(navArgument("id") {
+                        type = NavType.IntType}
+                    )
+                ) {
+                        backStackEntry ->
+                    val id = backStackEntry.arguments?.getInt("id")
+                    TripScreen(
+                        id,
+                        onNavigateTo = {
+                            navController.navigate(it) {
+                                popUpTo(0)
+                            }
+                        }
+                    )
+                }
+
             }
         }
     }
