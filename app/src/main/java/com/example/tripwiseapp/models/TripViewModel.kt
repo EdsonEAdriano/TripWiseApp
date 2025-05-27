@@ -1,5 +1,7 @@
 package com.example.tripwiseapp.models
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tripwiseapp.dao.TripDAO
@@ -9,13 +11,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
+@RequiresApi(Build.VERSION_CODES.O)
 data class RegisterTrip(
     val id: Int = 0,
     val destiny: String = "",
     val type: String = "",
-    val start: String = "",
-    val end: String = "",
+    val start: LocalDate = LocalDate.MIN,
+    val end: LocalDate = LocalDate.MIN,
     val budget: Double = 0.0,
     val errorMessage: String = "",
     val isSaved: Boolean = false
@@ -34,15 +38,17 @@ data class RegisterTrip(
         return ""
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun validateStart(): String {
-        if (start.isBlank())
+        if (start == LocalDate.MIN)
             return "Start Date is required"
 
         return ""
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun validateEnd(): String {
-        if (end.isBlank())
+        if (end == LocalDate.MIN)
             return "End Date is required"
 
         return ""
@@ -55,6 +61,7 @@ data class RegisterTrip(
         return ""
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun validateAllField() {
         if (destiny.isBlank()) {
             throw Exception("Destiny is required")
@@ -62,10 +69,10 @@ data class RegisterTrip(
         if (type.isBlank()) {
             throw Exception("Type is required")
         }
-        if (start.isBlank()) {
+        if (start == LocalDate.MIN) {
             throw Exception("Start Date is required")
         }
-        if (end.isBlank()) {
+        if (end == LocalDate.MIN) {
             throw Exception("End Date is required")
         }
         if (budget <= 0)
@@ -84,7 +91,7 @@ data class RegisterTrip(
     }
 }
 
-
+@RequiresApi(Build.VERSION_CODES.O)
 class TripViewModel(
     private val id: Int?,
     private val _tripDAO: TripDAO
@@ -121,11 +128,11 @@ class TripViewModel(
         _uiState.value = _uiState.value.copy(type = type)
     }
 
-    fun onStartChange(start: String) {
+    fun onStartChange(start: LocalDate) {
         _uiState.value = _uiState.value.copy(start = start)
     }
 
-    fun onEndChange(end: String) {
+    fun onEndChange(end: LocalDate) {
         _uiState.value = _uiState.value.copy(end = end)
     }
 

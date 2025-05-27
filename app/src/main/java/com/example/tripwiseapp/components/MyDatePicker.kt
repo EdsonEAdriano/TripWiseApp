@@ -2,6 +2,8 @@ package com.example.tripwiseapp.components
 
 import android.app.DatePickerDialog
 import android.icu.util.Calendar
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -14,23 +16,34 @@ import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MyDatePicker(
     label: String,
     value: String,
-    onValueChange: (String) -> Unit
+    onValueChange: (LocalDate) -> Unit
 ) {
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
+    var date = "";
+
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+    if (LocalDate.parse(value) == LocalDate.MIN)
+        date = "";
+    else
+        date = value;
 
     val datePickerDialog = remember {
         DatePickerDialog(
             context,
             { _, year, month, dayOfMonth ->
-                val selectedDate = "$dayOfMonth/${month + 1}/$year"
+                val selectedDate = LocalDate.of(year, month + 1, dayOfMonth)
                 onValueChange(selectedDate)
             },
             calendar.get(Calendar.YEAR),
@@ -41,7 +54,7 @@ fun MyDatePicker(
 
     Column(modifier = Modifier.padding(16.dp)) {
         OutlinedTextField(
-            value = value,
+            value = date,
             onValueChange = {}, // Campo somente leitura
             label = { Text(text = label) },
             readOnly = true,

@@ -61,8 +61,8 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit) {
                 ) {
                     Text("Destiny: ${trip.destiny}", style = MaterialTheme.typography.bodyLarge)
                     Text("Type: ${trip.type}", style = MaterialTheme.typography.bodyMedium)
-                    Text("Start: ${formatDate(trip.startDate)}", style = MaterialTheme.typography.bodyMedium)
-                    Text("End: ${formatDate(trip.endDate)}", style = MaterialTheme.typography.bodyMedium)
+                    Text("Start: ${formatDate(trip.startDate.toString())}", style = MaterialTheme.typography.bodyMedium)
+                    Text("End: ${formatDate(trip.endDate.toString())}", style = MaterialTheme.typography.bodyMedium)
                     Text("Budget: R$ ${"%.2f".format(trip.budget)}", style = MaterialTheme.typography.bodyMedium)
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -100,7 +100,7 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit) {
                         CoroutineScope(Dispatchers.IO).launch {
                             tripToDelete?.let { trip ->
                                 tripDao.deleteTrip(trip)
-                                trips = tripDao.getAllTrips().sortedBy { Date(it.startDate) }
+                                trips = tripDao.getAllTrips().sortedBy { Date(it.startDate.toString()) }
                                 tripToDelete = null
                             }
                         }

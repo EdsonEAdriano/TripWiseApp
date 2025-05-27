@@ -1,6 +1,8 @@
 package com.example.tripwiseapp.screens
 
+import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,11 +25,13 @@ import com.example.tripwiseapp.components.MyNumberField
 import com.example.tripwiseapp.components.MyRatioGroupField
 import com.example.tripwiseapp.components.MyTextField
 import com.example.tripwiseapp.database.AppDatabase
+import com.example.tripwiseapp.helpers.ETripType
 import com.example.tripwiseapp.models.RegisterTrip
 import com.example.tripwiseapp.models.TripViewModel
 import com.example.tripwiseapp.models.TripViewModelFactory
 import com.example.tripwiseapp.ui.theme.TripWiseAppTheme
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TripScreen(
@@ -70,15 +74,16 @@ fun TripScreen(
             MyRatioGroupField(
                 label = "Type",
                 value = registerTrip.value.type,
-                options = listOf("Leisure ", "Work"),
+                options = ETripType.values().map { it.displayName },
                 onValueChange = {
                     tripViewModel.onTypeChange(it)
                 }
             )
 
+
             MyDatePicker(
                 label = "Start Date",
-                value = registerTrip.value.start,
+                value = registerTrip.value.start.toString(),
                 onValueChange = {
                     tripViewModel.onStartChange(it)
                 }
@@ -86,15 +91,19 @@ fun TripScreen(
 
             MyDatePicker(
                 label = "End Date",
-                value = registerTrip.value.end,
+                value = registerTrip.value.end.toString(),
                 onValueChange = {
                     tripViewModel.onEndChange(it)
                 }
             )
 
+            Text(
+                text = registerTrip.value.budget.toString()
+            )
+
             MyNumberField(
                 label = "Budget",
-                value = registerTrip.value.budget.toString(),
+                value = registerTrip.value.budget,
                 onValueChange = {
                     tripViewModel.onBudgetChange(it.toDouble())
                 }
@@ -134,6 +143,7 @@ fun TripScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(showSystemUi = true, showBackground = true)
 fun PreviewTripScreen() {

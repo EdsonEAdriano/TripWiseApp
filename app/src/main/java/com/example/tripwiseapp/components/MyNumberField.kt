@@ -22,10 +22,10 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun MyNumberField(
     label: String = "",
-    value: String = "",
+    value: Double = 0.0,
     onValueChange: (Double) -> Unit
 ) {
-    var text by remember { mutableStateOf("") }
+    var text by remember { mutableStateOf( value.dp.value.toString() ) }
     val numberFormat = NumberFormat.getCurrencyInstance(Locale("pt", "BR"))
 
     fun formatCurrency(value: Double): String {
