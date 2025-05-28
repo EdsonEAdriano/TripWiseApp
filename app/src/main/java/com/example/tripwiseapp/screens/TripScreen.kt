@@ -97,10 +97,6 @@ fun TripScreen(
                 }
             )
 
-            Text(
-                text = registerTrip.value.budget.toString()
-            )
-
             MyNumberField(
                 label = "Budget",
                 value = registerTrip.value.budget,

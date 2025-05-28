@@ -1,8 +1,10 @@
 package com.example.tripwiseapp
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -38,6 +40,8 @@ import com.example.tripwiseapp.ui.theme.TripWiseAppTheme
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.contentColorFor
+import androidx.compose.material.icons.filled.ArtTrack
+import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.contentColorFor
 import androidx.compose.ui.graphics.Color
@@ -51,9 +55,11 @@ import com.example.tripwiseapp.models.TripViewModel
 import com.example.tripwiseapp.models.TripViewModelFactory
 import com.example.tripwiseapp.models.UserViewModelFactory
 import com.example.tripwiseapp.screens.AboutScreen
+import com.example.tripwiseapp.screens.ScriptScreen
 import com.example.tripwiseapp.screens.TripScreen
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -70,6 +76,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyApp() {
@@ -140,6 +147,20 @@ fun MyApp() {
                     )
                     BottomNavigationItem(
                         selected =
+                            currentDestination?.hierarchy?.any {
+                                it.route == "ScriptScreen"
+                            } == true,
+                        onClick = { navController.navigate("ScriptScreen") },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Default.AutoFixHigh,
+                                contentDescription = "Script",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    )
+                    BottomNavigationItem(
+                        selected =
                         currentDestination?.hierarchy?.any {
                             it.route == "AboutScreen"
                         } == true,
@@ -196,6 +217,11 @@ fun MyApp() {
                 composable(route = "AboutScreen") {
                     AboutScreen()
                 }
+
+                composable(route = "ScriptScreen") {
+                    ScriptScreen()
+                }
+
 
                 composable(route = "TripScreen") {
                     TripScreen(

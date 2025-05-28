@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     val room_version = "2.6.1"
     id("com.android.application")
@@ -5,7 +7,18 @@ plugins {
     id("com.google.devtools.ksp") version "2.0.21-1.0.27" apply true
     id("androidx.room") version "$room_version" apply false
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.21" // this version matches your Kotlin version
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1" apply true
 }
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+
+val apiKey = localProperties.getProperty("API_KEY")
+    ?: throw GradleException("API_KEY not found in local.properties")
 
 android {
     namespace = "com.example.tripwiseapp"
@@ -17,6 +30,8 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "API_KEY", "\"$apiKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -42,6 +57,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 //    composeOptions {
 //        kotlinCompilerExtensionVersion = "1.5.1"
@@ -82,5 +98,7 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
+
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
 
 }
