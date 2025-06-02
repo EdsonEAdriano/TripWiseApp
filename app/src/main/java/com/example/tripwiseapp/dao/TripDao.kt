@@ -21,6 +21,6 @@ interface TripDAO {
     @Query("SELECT * FROM Trip order by id desc")
     suspend fun getAllTrips(): List<Trip>
 
-    @Delete
-    suspend fun deleteTrip(trip: Trip)
+    @Query("DELETE FROM Trip WHERE id = :id")
+    suspend fun deleteTrip(id: Int)
 }

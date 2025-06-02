@@ -55,7 +55,6 @@ import com.example.tripwiseapp.models.TripViewModel
 import com.example.tripwiseapp.models.TripViewModelFactory
 import com.example.tripwiseapp.models.UserViewModelFactory
 import com.example.tripwiseapp.screens.AboutScreen
-import com.example.tripwiseapp.screens.ScriptScreen
 import com.example.tripwiseapp.screens.TripScreen
 
 class MainActivity : ComponentActivity() {
@@ -147,20 +146,6 @@ fun MyApp() {
                     )
                     BottomNavigationItem(
                         selected =
-                            currentDestination?.hierarchy?.any {
-                                it.route == "ScriptScreen"
-                            } == true,
-                        onClick = { navController.navigate("ScriptScreen") },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.AutoFixHigh,
-                                contentDescription = "Script",
-                                tint = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
-                    )
-                    BottomNavigationItem(
-                        selected =
                         currentDestination?.hierarchy?.any {
                             it.route == "AboutScreen"
                         } == true,
@@ -216,10 +201,6 @@ fun MyApp() {
 
                 composable(route = "AboutScreen") {
                     AboutScreen()
-                }
-
-                composable(route = "ScriptScreen") {
-                    ScriptScreen()
                 }
 
 
