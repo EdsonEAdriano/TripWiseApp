@@ -11,9 +11,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.rememberDismissState
+import androidx.compose.material.DismissDirection
+import androidx.compose.material.DismissValue
+import androidx.compose.material.SwipeToDismiss
+import androidx.compose.material.Card
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +35,7 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit) {
@@ -69,76 +76,92 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit) {
         trips = tripDao.getAllTrips().sortedByDescending { it.id }
     }
 
-    Column(
+
+
+
+    LazyColumn(
         modifier = Modifier
             .padding(16.dp)
-            .fillMaxSize()
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        trips.forEach { trip ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+        items(trips.size, key = { trips[it].id }) { index ->
+            val trip = trips[index]
 
-                elevation = CardDefaults.cardElevation(8.dp)
-            ) {
-                Column(
-                        modifier = Modifier.padding(16.dp)
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onLongPress = {
-                                    onInsertOrEdit(trip.id)
-                                }
-                            )
-                        }
-                ) {
-                    Text("Destiny: ${trip.destiny}", style = MaterialTheme.typography.bodyLarge)
-                    Text("Type: ${trip.type}", style = MaterialTheme.typography.bodyMedium)
-                    Text("Start: ${formatDate(trip.startDate.toString())}", style = MaterialTheme.typography.bodyMedium)
-                    Text("End: ${formatDate(trip.endDate.toString())}", style = MaterialTheme.typography.bodyMedium)
-                    Text("Budget: R$ ${"%.2f".format(trip.budget)}", style = MaterialTheme.typography.bodyMedium)
+            val dismissState = rememberDismissState(
+                confirmStateChange = { value ->
+                    if (value == DismissValue.DismissedToEnd) {
+                        tripToDelete = trip // Armazena para confirmar
+                        false // Não remove ainda!
+                    } else false
+                }
+            )
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
+            SwipeToDismiss(
+                state = dismissState,
+                directions = setOf(DismissDirection.StartToEnd),
+                background = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.CenterStart
                     ) {
-                        Button(
-                            onClick = { tripToDelete = trip },
-                            colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error),
-                            modifier = Modifier.padding(end = 8.dp)
+                        Text("Deslize para excluir", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissContent = {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        elevation = 8.dp
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onLongPress = {
+                                            onInsertOrEdit(trip.id)
+                                        }
+                                    )
+                                }
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Remove",
-                                modifier = Modifier.size(25.dp).padding(end = 3.dp)
-                            )
-                            Text("Remove")
-                        }
+                            Text("Destiny: ${trip.destiny}", style = MaterialTheme.typography.bodyLarge)
+                            Text("Type: ${trip.type}", style = MaterialTheme.typography.bodyMedium)
+                            Text("Start: ${formatDate(trip.startDate.toString())}", style = MaterialTheme.typography.bodyMedium)
+                            Text("End: ${formatDate(trip.endDate.toString())}", style = MaterialTheme.typography.bodyMedium)
+                            Text("Budget: R$ ${"%.2f".format(trip.budget)}", style = MaterialTheme.typography.bodyMedium)
 
-                        Button(
-                            onClick = {
-                                GetAISuggestion(trip.destiny, trip.startDate.toString(), trip.endDate.toString())
-                                isSuggestionDialogOpen = true
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            ),
-                            modifier = Modifier.padding(start = 8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AutoFixHigh,
-                                contentDescription = "Suggestion",
-                                modifier = Modifier.size(25.dp).padding(end = 3.dp)
-                            )
-                            Text("Suggestion")
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Button(
+                                    onClick = {
+                                        GetAISuggestion(trip.destiny, trip.startDate.toString(), trip.endDate.toString())
+                                        isSuggestionDialogOpen = true
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                    modifier = Modifier.padding(start = 8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.AutoFixHigh,
+                                        contentDescription = "Suggestion",
+                                        modifier = Modifier.size(25.dp).padding(end = 3.dp)
+                                    )
+                                    Text("Suggestion")
+                                }
+                            }
                         }
                     }
                 }
-            }
+            )
         }
     }
+
+
 
 
     if (tripToDelete != null) {
