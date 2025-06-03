@@ -37,6 +37,15 @@ fun AboutScreen(){
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
+
+            Text(
+                text = "This system was designed to simplify travel management by allowing users to easily register, view, and organize their trips. Through a clean and intuitive interface, you can enter details such as destination, travel dates, type of trip, and budget—all in one centralized place.\n" +
+                        "\n" +
+                        "What sets our system apart is the integration of Artificial Intelligence, which generates personalized suggestions for activities, itineraries, and tourist attractions based on the destination and travel dates provided. This allows you to enhance your planning process and make the most of every trip.\n" +
+                        "\n" +
+                        "Our mission is to combine technology and convenience to transform the way people plan their travels—offering not just a management tool, but a smart travel planning assistant.\n",
+                fontSize = 18.sp
+            )
         }
     }
 }
