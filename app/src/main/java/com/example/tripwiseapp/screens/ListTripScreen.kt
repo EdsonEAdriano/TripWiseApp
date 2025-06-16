@@ -28,6 +28,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.tripwiseapp.api.getSuggestion
+import com.example.tripwiseapp.entity.Suggestion
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,33 +36,48 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit) {
+fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit, userId: MutableState<Long>) {
     val context = LocalContext.current
     val tripDao = AppDatabase.getDatabase(context).tripDao()
+
+    val suggestionDao = AppDatabase.getDatabase(context).suggestionDao()
 
     var trips by remember { mutableStateOf(emptyList<Trip>()) }
     var tripToDelete by remember { mutableStateOf<Trip?>(null) }
 
-    var selectedTripId by remember { mutableStateOf<Int?>(null) }
+    var tripToSuggest by remember { mutableStateOf<Trip?>(null) }
 
     var isSuggestionDialogOpen by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(true) }
+    var isLoading by remember { mutableStateOf(false) }
     var aiSuggestion by remember { mutableStateOf("") }
 
 
-    fun GetAISuggestion(destiny: String, startDate: String, endDate: String){
+    suspend fun getSuggestionByTripId(tripId: Int?): Suggestion? {
+        return withContext(Dispatchers.IO) {
+            suggestionDao.findByTripId(tripId)
+        }
+    }
 
+    fun GetAISuggestion(trip: Trip){
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val suggestion = getSuggestion(destiny, startDate, endDate);
+                val existing = getSuggestionByTripId(trip.id)
+                val suggestionText = existing?.suggestion ?: run {
+                    val newText = getSuggestion(trip.destiny, trip.startDate.toString(), trip.endDate.toString(), trip.budget, trip.type)
+                    val suggestion = Suggestion(tripId = trip.id, suggestion = newText)
+                    suggestionDao.insertSuggestion(suggestion)
+                    newText
+                }
 
                 withContext(Dispatchers.Main) {
-                    aiSuggestion = suggestion
+                    aiSuggestion = suggestionText
                     isLoading = false
                 }
+
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     aiSuggestion = "Error while generating suggestion. ERROR MESSAGE: ${e.message}"
@@ -73,7 +89,7 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit) {
 
 
     LaunchedEffect(Unit) {
-        trips = tripDao.getAllTrips().sortedByDescending { it.id }
+        trips = tripDao.getAllTripsByUser(userId.value).sortedByDescending { it.id }
     }
 
 
@@ -107,7 +123,7 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit) {
                             .padding(16.dp),
                         contentAlignment = Alignment.CenterStart
                     ) {
-                        Text("Deslize para excluir", color = MaterialTheme.colorScheme.error)
+                        Text("Swipe to delete", color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissContent = {
@@ -140,8 +156,11 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit) {
                             ) {
                                 Button(
                                     onClick = {
-                                        GetAISuggestion(trip.destiny, trip.startDate.toString(), trip.endDate.toString())
+                                        tripToSuggest = trip
+                                        aiSuggestion = ""
                                         isSuggestionDialogOpen = true
+                                        isLoading = true
+                                        GetAISuggestion(trip)
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                                     modifier = Modifier.padding(start = 8.dp)
@@ -175,7 +194,7 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit) {
                         CoroutineScope(Dispatchers.IO).launch {
                             tripToDelete?.let { trip ->
                                 tripDao.deleteTrip(trip.id)
-                                trips = tripDao.getAllTrips().sortedBy { Date(it.startDate.toString()) }
+                                trips = tripDao.getAllTripsByUser(userId.value).sortedBy { Date(it.startDate.toString()) }
                                 tripToDelete = null
                             }
                         }
@@ -196,9 +215,17 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit) {
 
     if (isSuggestionDialogOpen) {
         AlertDialog(
-            onDismissRequest = { isSuggestionDialogOpen = false },
+            onDismissRequest = {
+                isSuggestionDialogOpen = false
+                tripToSuggest = null
+                isLoading = false
+            },
             confirmButton = {
-                TextButton(onClick = { isSuggestionDialogOpen = false }) {
+                TextButton(onClick = {
+                    isSuggestionDialogOpen = false
+                    tripToSuggest = null
+                    isLoading = false
+                }) {
                     Text("Close")
                 }
             },
@@ -230,8 +257,6 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit) {
     }
 
 }
-
-
 
 
 fun formatDate(dateString: String): String {

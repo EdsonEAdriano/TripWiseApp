@@ -10,7 +10,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -36,7 +40,8 @@ import com.example.tripwiseapp.ui.theme.TripWiseAppTheme
 @Composable
 fun TripScreen(
     id: Int?,
-    onNavigateTo:(String) -> Unit
+    onNavigateTo:(String) -> Unit,
+    userId: MutableState<Long>
 ){
     val ctx = LocalContext.current
 
@@ -46,6 +51,8 @@ fun TripScreen(
     )
 
     val registerTrip = tripViewModel.uiState.collectAsState()
+
+    tripViewModel.onUserId(userId.value);
 
     Scaffold {
         Column(
@@ -143,7 +150,9 @@ fun TripScreen(
 @Composable
 @Preview(showSystemUi = true, showBackground = true)
 fun PreviewTripScreen() {
+    val userId = remember { mutableLongStateOf(0) }
+
     TripWiseAppTheme {
-        TripScreen(null, {})
+        TripScreen(null, {}, userId)
     }
 }

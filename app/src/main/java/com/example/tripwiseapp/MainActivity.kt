@@ -2,6 +2,7 @@ package com.example.tripwiseapp
 
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -44,6 +45,9 @@ import androidx.compose.material.icons.filled.ArtTrack
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.contentColorFor
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -86,6 +90,8 @@ fun MyApp() {
     val userViewModel : UserViewModel = viewModel(
         factory = UserViewModelFactory(userDao)
     )
+
+    var userId = remember { mutableLongStateOf(0) }
 
     val loginViewModel : LoginViewModel = viewModel(
         factory = LoginViewModelFactory(userDao)
@@ -178,7 +184,11 @@ fun MyApp() {
                                     popUpTo(0)
                                 }
                             }
-                        })
+                        },
+                        onUserIdChange = {
+                            userId.value = it
+                        }
+                    )
                 }
 
                 composable(route = "LoginScreen") {
@@ -188,14 +198,21 @@ fun MyApp() {
                             navController.navigate(it) {
                                 popUpTo(0)
                             }
-                        })
+                        },
+                        onUserIdChange = {
+                            Log.d("UserId", it.toString())
+                            userId.value = it
+                        }
+
+                    )
                 }
 
                 composable(route = "MainScreen") {
                     MainScreen(
                         onNavigateTo = {
                             navController.navigate(it)
-                        }
+                        },
+                        userId
                     )
                 }
 
@@ -211,7 +228,8 @@ fun MyApp() {
                             navController.navigate(it) {
                                 popUpTo(0)
                             }
-                        }
+                        },
+                        userId
                     )
                 }
 
@@ -228,7 +246,8 @@ fun MyApp() {
                             navController.navigate(it) {
                                 popUpTo(0)
                             }
-                        }
+                        },
+                        userId
                     )
                 }
 

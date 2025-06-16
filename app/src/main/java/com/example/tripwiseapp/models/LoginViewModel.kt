@@ -47,7 +47,7 @@ class LoginViewModel(
         _uiState.value = _uiState.value.copy(password = password)
     }
 
-    fun login()  {
+    fun login(onResult: (Long) -> Unit) {
         try {
             _uiState.value.validateAllField()
 
@@ -56,16 +56,22 @@ class LoginViewModel(
                     _uiState.value.email,
                     _uiState.value.password
                 )
-                if (valid != null)
+
+                if (valid != null) {
                     _uiState.value = _uiState.value.copy(isValid = true)
-                else
+                    onResult(valid.id)
+                } else {
                     _uiState.value = _uiState.value.copy(errorMessage = "Invalid Login")
+                    onResult(0)
+                }
             }
-        }
-        catch (e: Exception) {
-            _uiState.value = _uiState.value.copy(errorMessage = e.message ?: "Unknow error")
+
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(errorMessage = e.message ?: "Unknown error")
+            onResult(0)
         }
     }
+
 
     fun cleanErrorMessage() {
         _uiState.value = _uiState.value.copy(

@@ -18,8 +18,8 @@ interface TripDAO {
     @Query("SELECT * FROM Trip WHERE id =:id")
     suspend fun findById(id : Int) : Trip?
 
-    @Query("SELECT * FROM Trip order by id desc")
-    suspend fun getAllTrips(): List<Trip>
+    @Query("SELECT * FROM Trip WHERE userId = :userId ORDER BY id DESC")
+    suspend fun getAllTripsByUser(userId: Long): List<Trip>
 
     @Query("DELETE FROM Trip WHERE id = :id")
     suspend fun deleteTrip(id: Int)

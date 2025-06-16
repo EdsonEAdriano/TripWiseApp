@@ -11,7 +11,7 @@ import com.example.tripwiseapp.entity.User
 @Dao
 interface UserDAO {
     @Insert
-    suspend fun insert(user: User)
+    suspend fun insert(user: User): Long
 
     @Update
     suspend fun update(user: User)

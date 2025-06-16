@@ -1,5 +1,6 @@
 package com.example.tripwiseapp.screens
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,7 +11,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,7 +32,7 @@ import com.example.tripwiseapp.ui.theme.TripWiseAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(loginViewModel: LoginViewModel, onNavigateTo:(String) -> Unit) {
+fun LoginScreen(loginViewModel: LoginViewModel, onNavigateTo:(String) -> Unit, onUserIdChange: (Long) -> Unit) {
     var loginUser = loginViewModel.uiState.collectAsState()
     val ctx = LocalContext.current
 
@@ -65,7 +69,10 @@ fun LoginScreen(loginViewModel: LoginViewModel, onNavigateTo:(String) -> Unit) {
             Button(
                 modifier = Modifier.padding(top = 16.dp),
                 onClick = {
-                    loginViewModel.login()
+                    loginViewModel.login({ id ->
+                        Log.d("ID GERADO", id.toString())
+                        onUserIdChange(id)
+                    })
                 }
             ) {
                 Text(text = "Login")
@@ -100,6 +107,6 @@ fun PreviewLoginScreen() {
     val loginViewModel : LoginViewModel = viewModel()
 
     TripWiseAppTheme {
-        LoginScreen(loginViewModel, {})
+        LoginScreen(loginViewModel, {}, {})
     }
 }

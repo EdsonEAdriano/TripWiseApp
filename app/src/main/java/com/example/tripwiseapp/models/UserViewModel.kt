@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class RegisterUser(
+    val id: Int = 0,
     val user: String = "",
     val email: String = "",
     val password: String = "",
@@ -79,21 +80,22 @@ class UserViewModel(
         _uiState.value = _uiState.value.copy(confirmPassword = confirm)
     }
 
-    fun register() {
+    fun register(onResult: (Long) -> Unit) {
         try {
             _uiState.value.validateAllField()
 
             viewModelScope.launch {
-                _userDAO.insert(
-                    _uiState.value.toUser()
-                )
+                val userId = _userDAO.insert(_uiState.value.toUser())
                 _uiState.value = _uiState.value.copy(isSaved = true)
+                onResult(userId)
             }
-        }
-        catch (e: Exception) {
-            _uiState.value = _uiState.value.copy(errorMessage = e.message ?: "Unknow error")
+
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(errorMessage = e.message ?: "Unknown error")
+            onResult(0)
         }
     }
+
 
     fun cleanDisplayValues() {
         _uiState.value = _uiState.value.copy(

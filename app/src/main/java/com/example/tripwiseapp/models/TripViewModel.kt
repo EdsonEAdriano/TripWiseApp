@@ -16,6 +16,7 @@ import java.time.LocalDate
 @RequiresApi(Build.VERSION_CODES.O)
 data class RegisterTrip(
     val id: Int = 0,
+    val userId: Long = 0,
     val destiny: String = "",
     val type: String = "",
     val start: LocalDate = LocalDate.MIN,
@@ -82,6 +83,7 @@ data class RegisterTrip(
     fun toTrip(): Trip {
         return Trip(
             id         =  id,
+            userId     =  userId,
             destiny    =  destiny,
             type       =  type,
             startDate  =  start,
@@ -107,6 +109,7 @@ class TripViewModel(
                 _tripDAO.findById(id)?.let { trip ->
                     _uiState.value = _uiState.value.copy(
                         id = trip.id,
+                        userId = trip.userId,
                         destiny = trip.destiny,
                         type = trip.type,
                         start = trip.startDate,
@@ -119,6 +122,9 @@ class TripViewModel(
     }
 
 
+    fun onUserId(userId: Long) {
+        _uiState.value = _uiState.value.copy(userId = userId)
+    }
 
     fun onDestinyChange(destiny: String) {
         _uiState.value = _uiState.value.copy(destiny = destiny)

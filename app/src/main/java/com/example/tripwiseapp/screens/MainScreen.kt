@@ -11,6 +11,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -30,7 +34,8 @@ import java.util.Date
 
 @Composable
 fun MainScreen(
-    onNavigateTo:(String) -> Unit
+    onNavigateTo:(String) -> Unit,
+    userId: MutableState<Long>
 ){
     Scaffold {
         Column(
@@ -52,7 +57,8 @@ fun MainScreen(
                         onNavigateTo("TripScreen")
                     else
                         onNavigateTo("TripScreen/${it}")
-                }
+                },
+                userId
             )
         }
     }
@@ -61,7 +67,9 @@ fun MainScreen(
 @Composable
 @Preview(showSystemUi = true, showBackground = true)
 fun PreviewMainScreen() {
+    val currentStep = remember { mutableLongStateOf(0) }
+
     TripWiseAppTheme {
-        MainScreen({})
+        MainScreen({}, currentStep)
     }
 }
