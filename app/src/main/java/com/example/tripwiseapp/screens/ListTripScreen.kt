@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.tripwiseapp.api.UpdateSuggestion
 import com.example.tripwiseapp.api.getSuggestion
 import com.example.tripwiseapp.entity.Suggestion
 import kotlinx.coroutines.CoroutineScope
@@ -56,12 +57,15 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit, userId: MutableState<Long>) 
     var suggestionId by remember { mutableLongStateOf(0) }
     var aiSuggestion by remember { mutableStateOf("") }
 
+    var promptText by remember { mutableStateOf("") }
+
 
     suspend fun getSuggestionByTripId(tripId: Int?): Suggestion? {
         return withContext(Dispatchers.IO) {
             suggestionDao.findByTripId(tripId)
         }
     }
+
 
     fun GetAISuggestion(trip: Trip){
         CoroutineScope(Dispatchers.IO).launch {
@@ -181,7 +185,9 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit, userId: MutableState<Long>) 
                                     Icon(
                                         imageVector = Icons.Default.AutoFixHigh,
                                         contentDescription = "Suggestion",
-                                        modifier = Modifier.size(25.dp).padding(end = 3.dp)
+                                        modifier = Modifier
+                                            .size(25.dp)
+                                            .padding(end = 3.dp)
                                     )
                                     Text("Suggestion")
                                 }
@@ -232,22 +238,39 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit, userId: MutableState<Long>) 
                 isSuggestionDialogOpen = false
                 tripToSuggest = null
                 isLoading = false
+                promptText = ""
             },
             confirmButton = {
                 TextButton(onClick = {
                     isSuggestionDialogOpen = false
                     tripToSuggest = null
                     isLoading = false
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        suggestionDao.updateSuggestion(suggestionId, aiSuggestion)
-                    }
+                    promptText = ""
                 }) {
                     Text("Close")
                 }
             },
+            dismissButton = {
+                TextButton(
+                    enabled = !isLoading && promptText.isNotBlank(),
+                    onClick = {
+                        isLoading = true
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val newText = UpdateSuggestion(aiSuggestion, promptText)
+                            suggestionDao.updateSuggestion(suggestionId, newText)
+                            withContext(Dispatchers.Main) {
+                                aiSuggestion = newText
+                                isLoading = false
+                                promptText = ""
+                            }
+                        }
+                    }
+                ) {
+                    Text("Send Prompt to AI")
+                }
+            },
             title = {
-                Text("Destiny Suggestions")
+                Text("Destination Suggestion")
             },
             text = {
                 if (isLoading) {
@@ -260,28 +283,43 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit, userId: MutableState<Long>) 
                     ) {
                         CircularProgressIndicator()
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text("Generating Suggestions...")
+                        Text("Processing with AI...")
                     }
                 } else {
-                    Box(
+                    Column(
+                        verticalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
-                            .height(600.dp)
-                            .width(400.dp)
-                            .verticalScroll(rememberScrollState())
+                            .fillMaxWidth()
+                            .height(500.dp)
                     ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            Text(
+                                text = aiSuggestion,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp)) // <- espaço entre texto e prompt
+
                         TextField(
-                            value = aiSuggestion,
-                            onValueChange = { aiSuggestion = it },
-                            modifier = Modifier.fillMaxSize(),
-                            label = { Text("Edit suggestion") },
-                            singleLine = false,
-                            maxLines = 200
+                            value = promptText,
+                            onValueChange = { promptText = it },
+                            label = { Text("What would you like to change?") },
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
             }
         )
     }
+
+
+
+
 
 
 
