@@ -14,7 +14,7 @@ import androidx.room.PrimaryKey
 )
 data class Suggestion (
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    val id: Long = 0,
 
     var tripId: Int = 0,
     val suggestion: String = "",

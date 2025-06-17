@@ -53,6 +53,7 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit, userId: MutableState<Long>) 
 
     var isSuggestionDialogOpen by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
+    var suggestionId by remember { mutableLongStateOf(0) }
     var aiSuggestion by remember { mutableStateOf("") }
 
 
@@ -66,11 +67,23 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit, userId: MutableState<Long>) 
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val existing = getSuggestionByTripId(trip.id)
-                val suggestionText = existing?.suggestion ?: run {
-                    val newText = getSuggestion(trip.destiny, trip.startDate.toString(), trip.endDate.toString(), trip.budget, trip.type)
+
+                var suggestionText: String;
+
+                if (existing?.suggestion != null) {
+                    suggestionId = existing.id
+                    suggestionText = existing.suggestion
+                } else {
+                    val newText = getSuggestion(
+                        trip.destiny,
+                        trip.startDate.toString(),
+                        trip.endDate.toString(),
+                        trip.budget,
+                        trip.type
+                    )
                     val suggestion = Suggestion(tripId = trip.id, suggestion = newText)
-                    suggestionDao.insertSuggestion(suggestion)
-                    newText
+                    suggestionId = suggestionDao.insertSuggestion(suggestion)
+                    suggestionText = newText
                 }
 
                 withContext(Dispatchers.Main) {
@@ -225,6 +238,10 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit, userId: MutableState<Long>) 
                     isSuggestionDialogOpen = false
                     tripToSuggest = null
                     isLoading = false
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        suggestionDao.updateSuggestion(suggestionId, aiSuggestion)
+                    }
                 }) {
                     Text("Close")
                 }
@@ -237,7 +254,9 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit, userId: MutableState<Long>) 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp)
                     ) {
                         CircularProgressIndicator()
                         Spacer(modifier = Modifier.width(12.dp))
@@ -246,15 +265,25 @@ fun ListTripsScreen(onInsertOrEdit: (Int?) -> Unit, userId: MutableState<Long>) 
                 } else {
                     Box(
                         modifier = Modifier
-                            .heightIn(max = 200.dp)
+                            .height(600.dp)
+                            .width(400.dp)
                             .verticalScroll(rememberScrollState())
                     ) {
-                        Text(aiSuggestion)
+                        TextField(
+                            value = aiSuggestion,
+                            onValueChange = { aiSuggestion = it },
+                            modifier = Modifier.fillMaxSize(),
+                            label = { Text("Edit suggestion") },
+                            singleLine = false,
+                            maxLines = 200
+                        )
                     }
                 }
             }
         )
     }
+
+
 
 }
 
