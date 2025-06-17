@@ -40,7 +40,10 @@ import com.example.tripwiseapp.ui.theme.TripWiseAppTheme
 
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.IconButton
 import androidx.compose.material.contentColorFor
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ArtTrack
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Place
@@ -93,18 +96,41 @@ fun MyApp() {
 
     var userId = remember { mutableLongStateOf(0) }
 
-    val loginViewModel : LoginViewModel = viewModel(
+    var loginViewModel : LoginViewModel = viewModel(
         factory = LoginViewModelFactory(userDao)
     )
 
     Scaffold(
-        topBar = {
+        topBar = @androidx.compose.runtime.Composable {
             TopAppBar(
                 title = {
                     Text(
                         color = MaterialTheme.colorScheme.onPrimary,
                         text = "TripWiseApp"
                     )
+                },
+                actions = {
+                    val backStack = navController.currentBackStackEntryAsState()
+                    val currentDestination = backStack.value?.destination
+
+                    val hideBottomBarScreens = listOf("RegisterScreen", "LoginScreen")
+                    val shouldShowBottomBar = currentDestination?.route !in hideBottomBarScreens
+
+                    if (shouldShowBottomBar){
+                        IconButton(onClick = {
+                            userId.value = 0;
+                            loginViewModel = LoginViewModel(userDao)
+                            navController.navigate("LoginScreen") {
+                                popUpTo(0)
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBackIosNew,
+                                contentDescription = "Logout",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
